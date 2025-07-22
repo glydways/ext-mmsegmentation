@@ -1,8 +1,11 @@
 _base_ = [
-    'bisenetv1_r18-d32.py',
+    '../_base_/models/bisenetv1_r18-d32.py',
     'glyd_lens_artifact_1024x1024.py',
-    'customed_runtime.py', 'schedule_160k.py'
+    '../_base_/default_runtime.py',
+    '../_base_/schedules/schedule_160k.py'
 ]
+
+# Model overrides
 crop_size = (1024, 1024)
 data_preprocessor = dict(size=crop_size)
 model = dict(
@@ -14,6 +17,9 @@ model = dict(
     ]
 )
 
+# Training schedule overrides
+optimizer = dict(type='SGD', lr=0.025, momentum=0.9, weight_decay=0.0005)
+optim_wrapper = dict(type='OptimWrapper', optimizer=optimizer)
 param_scheduler = [
     dict(type='LinearLR', by_epoch=False, start_factor=0.1, begin=0, end=1000),
     dict(
@@ -25,8 +31,10 @@ param_scheduler = [
         by_epoch=False,
     )
 ]
-optimizer = dict(type='SGD', lr=0.025, momentum=0.9, weight_decay=0.0005)
-optim_wrapper = dict(type='OptimWrapper', optimizer=optimizer)
-train_dataloader = dict(batch_size=4, num_workers=4)
-val_dataloader = dict(batch_size=1, num_workers=4)
-test_dataloader = val_dataloader
+train_cfg = dict(max_iters=160000, val_interval=1000) # run validation every 1000 steps
+
+# Runtime overrides
+vis_backends = [dict(type='LocalVisBackend'),
+                dict(type='TensorboardVisBackend')]
+
+# Dataset overrides
