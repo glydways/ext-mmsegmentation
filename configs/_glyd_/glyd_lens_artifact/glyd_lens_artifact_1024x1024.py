@@ -1,5 +1,5 @@
 dataset_type = 'GlydLensArtifactDataset'
-data_root = 'datasets/glyd_lens_artifact'
+data_root = 'data/glyd_lens_artifact'
 crop_size = (1024, 1024)
 
 train_pipeline = [
