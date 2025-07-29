@@ -41,6 +41,7 @@ from .transforms import (CLAHE, AdjustGamma, Albu, BioMedical3DPad,
                          SegRescale)
 from .voc import PascalVOCDataset
 from .glyd_lens_artifact import GlydLensArtifactDataset
+from .raindrops_on_windshield import RaindropsOnWindshieldDataset
 
 # yapf: enable
 __all__ = [
