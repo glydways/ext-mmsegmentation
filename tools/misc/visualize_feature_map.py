@@ -12,8 +12,15 @@ from mmseg.structures import SegDataSample
 from mmseg.utils import register_all_modules
 from mmseg.visualization import SegLocalVisualizer
 
-# from mmengine import Config
-# from pprint import pprint
+# Example usage: python visualize_feature_map.py \
+#   /path/to/your/image.jpg \
+#   /path/to/your/config.py \
+#   /path/to/your/checkpoint.pth \
+#   --gt_mask /path/to/your/gt_mask.png \
+#   --device cuda:0 \
+#   --opacity 0.5 \
+#   --title "result" \
+#   --layers "backbone.spatial_path.layer1 backbone.context_path.backbone.layer1.1 backbone.context_path.arm16"
 
 class Recorder:
     """record the forward output feature map and save to data_buffer."""
@@ -93,7 +100,6 @@ def main():
     parser.add_argument('config', help='Config file')
     parser.add_argument('checkpoint', help='Checkpoint file')
     parser.add_argument('--gt_mask', default=None, help='Path of gt mask file')
-    parser.add_argument('--out-file', default=None, help='Path to output file')
     parser.add_argument(
         '--device', default='cuda:0', help='Device used for inference')
     parser.add_argument(
@@ -113,11 +119,7 @@ def main():
     register_all_modules()
 
     # build the model from a config file and a checkpoint file
-    # cfg = Config.fromfile(args.config)
-    # cfg.model.test_cfg = dict(mode='whole')
-    # model = init_model(cfg, args.checkpoint, device=args.device)
     model = init_model(args.config, args.checkpoint, device=args.device)
-    # model.test_cfg = dict(mode='whole')
 
     if args.device == 'cpu':
         model = revert_sync_batchnorm(model)
@@ -150,7 +152,6 @@ def main():
 
     # registry the forward hook
     for name, module in model.named_modules():
-        # print(name)
         if name in source:
             layer_names.append(name)
             handle = module.register_forward_hook(recorder.record_data_hook)
