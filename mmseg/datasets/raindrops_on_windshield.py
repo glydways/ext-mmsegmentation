@@ -5,7 +5,7 @@ from .basesegdataset import BaseSegDataset
 class RaindropsOnWindshieldDataset(BaseSegDataset):
     METAINFO = dict(
         classes=('background', 'raindrop'),
-        palette=[[0, 0, 0], [255, 255, 255]])
+        palette=[[0, 0, 0], [185, 247, 255]])
 
     def __init__(self,
                  img_suffix='_img.png',

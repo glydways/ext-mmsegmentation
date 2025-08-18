@@ -4,23 +4,28 @@ from typing import Optional, Sequence
 
 import mmcv
 from mmengine.fileio import get
-from mmengine.hooks import Hook
 from mmengine.runner import Runner
-from mmengine.visualization import Visualizer
 
 from mmseg.registry import HOOKS
 from mmseg.structures import SegDataSample
 from mmseg.engine.hooks import SegVisualizationHook
 
+import fnmatch
 
 @HOOKS.register_module()
 class CustomSegVisualizationHook(SegVisualizationHook):
-    def __init__(self, draw_idx=None, draw_filenames=None, *args, **kwargs):
-        self.draw_idx = draw_idx
-        self.draw_filenames = draw_filenames
+    def __init__(
+            self,
+            draw_filenames: Optional[Sequence[str]] = None,
+            val_interval: Optional[int] = None,
+            *args,
+            **kwargs
+        ):
         super().__init__(*args, **kwargs)
+        self.val_interval = val_interval
+        self._patterns = list(draw_filenames) if draw_filenames else None
 
-    def _draw_image(self, outputs, total_curr_iter):
+    def _draw_image(self, outputs, runner_iter):
         img_path = outputs[0].img_path
         img_bytes = get(img_path, backend_args=self.backend_args)
         img = mmcv.imfrombytes(img_bytes, channel_order='rgb')
@@ -34,41 +39,26 @@ class CustomSegVisualizationHook(SegVisualizationHook):
             data_sample=outputs[0],
             show=self.show,
             wait_time=self.wait_time,
-            step=total_curr_iter)
-
+            step=runner_iter)
 
     def after_val_iter(self, runner: Runner, batch_idx: int, data_batch: dict,
                        outputs: Sequence[SegDataSample]) -> None:
         if self.draw is False:
             return
 
-        total_curr_iter = runner.iter + batch_idx # total_curr_iter is the total number of iterations (including the current iteration)
-        if total_curr_iter % self.interval != 0:
-            return
+        # Two-level control:
+        # 1. Check if this is a validation run we want to visualize
+        if self.val_interval is not None:
+            validation_run_number = runner.iter // self.val_interval
+            # print(f"Validation runner iter: {runner.iter}, batch_idx: {batch_idx}")
+            if validation_run_number % self.interval != 0:
+                return
 
-        if self.draw_idx is not None and batch_idx == self.draw_idx:
-            self._draw_image(outputs, total_curr_iter)
-
-        if self.draw_filenames is not None:
+        if self._patterns is not None:
             img_path = outputs[0].img_path
             img_basename = osp.basename(img_path)
 
-            # Check if filename matches any in draw_filenames
-            # Handle both formats: with and without _img suffix
-            for filename in self.draw_filenames:
-                # Direct match
-                if img_basename == filename:
-                    self._draw_image(outputs, total_curr_iter)
+            for pat in self._patterns:
+                if fnmatch.fnmatch(img_basename, pat):
+                    self._draw_image(outputs, runner.iter)
                     return
-                # Match without _img suffix
-                if img_basename == filename.replace('.png', '_img.png'):
-                    self._draw_image(outputs, total_curr_iter)
-                    return
-                # Match with _img suffix
-                if img_basename == filename.replace('.png', '_img.png'):
-                    self._draw_image(outputs, total_curr_iter)
-                    return
-
-
-
-
