@@ -40,6 +40,8 @@ from .transforms import (CLAHE, AdjustGamma, Albu, BioMedical3DPad,
                          ResizeShortestEdge, ResizeToMultiple, RGB2Gray,
                          SegRescale)
 from .voc import PascalVOCDataset
+from .glyd_lens_artifact import GlydLensArtifactDataset
+from .raindrops_on_windshield import RaindropsOnWindshieldDataset
 
 # yapf: enable
 __all__ = [
@@ -61,5 +63,5 @@ __all__ = [
     'MapillaryDataset_v2', 'Albu', 'LEVIRCDDataset',
     'LoadMultipleRSImageFromFile', 'LoadSingleRSImageFromFile',
     'ConcatCDInput', 'BaseCDDataset', 'DSDLSegDataset', 'BDD100KDataset',
-    'NYUDataset', 'HSIDrive20Dataset'
+    'NYUDataset', 'HSIDrive20Dataset', 'GlydRaindropLenDataset', 'RaindropsOnWindshieldDataset',
 ]

@@ -114,7 +114,11 @@ data
 *.pkl.json
 *.log.json
 work_dirs/
+work_dirs_archive/
+temp_dir/
 mmseg/.mim
+*.log
 
 # Pytorch
 *.pth
+
